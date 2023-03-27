@@ -1,10 +1,28 @@
-MDROOT ?= /opt/toolchains/m68k-elf
+# There are a lot of toolchains, huh
+ifeq ($(MDROOT),)
+	ifeq ($(shell which m68k-elf-gcc),)
+		ifeq ($(MARSDEV),)
+			ifeq ($(GDK),)
+				ifeq ($(GENDEV),)
+					$(error "Can't find any installed toolchain!")
+				else
+					MDROOT := $(GENDEV)/m68k-elf
+				endif
+			else
+				MDROOT := $(GDK)
+			endif
+		else
+			MDROOT := $(MARSDEV)/m68k-elf
+		endif
+	else
+		MDROOT := $(subst /bin/m68k-elf-gcc,,$(shell which m68k-elf-gcc))
+	endif
+endif
+
 MDBIN  := $(MDROOT)/bin
 MDLIB  := $(MDROOT)/lib
 MDINC  := $(MDROOT)/include
 
-# This Makefile assumes the toolchain is in your PATH
-# If not, prepend $(MDBIN)/ to these values
 CC     := $(MDBIN)/m68k-elf-gcc
 AS     := $(MDBIN)/m68k-elf-as
 LD     := $(MDBIN)/m68k-elf-ld
