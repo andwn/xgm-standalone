@@ -59,16 +59,8 @@ RomHeader:
 		.ascii	"                                        " /* Free space for note */
 		.ascii	"JUE             "          /* Region */
 
-/* Blank data used for various things */
 
     .section .text.boot
-
-    .globl BlankData
-    .align 256
-BlankData:
-    .rept 16
-        dc.l    0, 0, 0, 0
-    .endr
 
 /* System boot */
 

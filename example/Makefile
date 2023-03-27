@@ -24,8 +24,11 @@ GCC_VER := $(shell $(CC) -dumpversion)
 PLUGIN  := $(MDROOT)/libexec/gcc/m68k-elf/$(GCC_VER)
 LTO_SO  := liblto_plugin.so
 
+REL_FLAGS = -O3 -flto=auto
+DBG_FLAGS = -Og -g
+
 # Flags for compiler, assembler and linker
-CCFLAGS  = -m68000 -I../m68k-src -ffreestanding -O2 -Wall -Wextra
+CCFLAGS  = -m68000 -ffreestanding $(DBG_FLAGS) -Wall -Wextra
 ASFLAGS  = -m68000 -I../m68k-src --register-prefix-optional --bitwise-or
 LDFLAGS  = -T megadrive.ld -nostartfiles -L$(MDLIB)/gcc/m68k-elf/$(GCC_VER) -lgcc
 
@@ -49,6 +52,8 @@ OBJS  = $(CS:.c=.o)
 OBJS += $(SS:.s=.o)
 
 TARGET := xgm-test
+
+.SECONDARY: $(TARGET).elf
 
 .PHONY: all clean
 
@@ -96,3 +101,4 @@ $(MDTILER):
 
 clean:
 	rm -f $(TSETO) $(XGCS) $(PCMS) $(OBJS)
+	rm -f $(TARGET).elf $(TARGET).gen $(TARGET).lst

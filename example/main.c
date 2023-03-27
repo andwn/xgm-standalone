@@ -2,10 +2,9 @@
 
 #include "dma.h"
 #include "joy.h"
-#include "string.h"
 #include "sys.h"
 #include "vdp.h"
-#include "xgm.h"
+#include "../m68k-src/xgm.h"
 
 #include "resources.h"
 
@@ -17,9 +16,9 @@
 #define PRI_MID     5
 #define PRI_HI      8
 
-extern uint16_t sprintf(char *buffer, const char *fmt, ...);
-
 void main(void) {
+    //__asm__("illegal"); // Error test
+
     joy_init();
     vdp_init();
     // Gotta call this first
@@ -49,10 +48,8 @@ void main(void) {
         if(joy_pressed(JOY_C)) xgm_pcm_play(SFX_ID_3, PRI_MID, 3);
 
         // This frame counter is just here to make sure we don't lock up
-        timer++;
-        char timestr[8];
-        sprintf(timestr, "%lu", timer);
-        vdp_puts(VDP_PLANE_A, timestr, 4, 24);
+        char timec[2] = { 0x20 + (++timer & 0x3F), 0};
+        vdp_puts(VDP_PLANE_A, timec, 4, 24);
 
         sys_wait_vblank();
         // This is already called as part of the vertical interrupt handler in sys.s,

@@ -19,6 +19,14 @@ VAR xgmTempoDef, w, 1
 
     .section .text
 
+/* Blank data to used as the "null sample" */
+    .globl BlankData
+    .align 256
+BlankData:
+    .rept 16
+        dc.l    0, 0, 0, 0
+    .endr
+
 /* XGM Driver blob */
 BIN z80_xgm,    "../z80-xgm.bin"
 z80_xgm_end:
