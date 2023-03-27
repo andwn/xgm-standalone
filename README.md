@@ -25,36 +25,20 @@ Assuming you have a C compiler `make` is all you need. This does the following:
 Once you have the `z80-xgm.bin` copy that into your project, along with the
 contents of the `m68k-src` directory.
 
-You may need to modify these paths in xgm.s. Just point them to where the files
-actually are, relative to your project root.
+Give `m68k-src/xgm.h` and `example/main.c` a read for further instructions.
+
+You may need to modify these paths in `m68k-src/xgm.s`. 
+Just point them to where the files actually are, relative to your project root.
 
     /* XGM Driver blob */
-    BIN z80_xgm,    "res/z80_xgm.bin"
+    BIN z80_xgm,    "z80_xgm.bin"
     z80_xgm_end:
     
-    BIN stop_xgm,   "res/stop_xgm.bin"
+    BIN stop_xgm,   "stop_xgm.bin"
 
-You essentially need to run these in order:
-
-    // Init or nothing will happen
-    xgm_init();
-    // XGM keeps a table of samples in memory, up to 256.
-    // Each entry has an address to the start of a sample, and the length in bytes.
-    // So, for each sample, we need to provide this information to xgm_pcm_set.
-    // The first 64 or so entries are reserved for BGM samples, so use higher
-    // numbers for the ID.
-    xgm_pcm_set(SFX_ID, SFX_MySound, SFX_MySound_end-SFX_MySound);
-    // To play a track
-    xgm_music_play(BGM_MySong);
-    // To play a sound effect
-    xgm_pcm_play(SFX_ID, PRIORITY);
-    // In your vertical interrupt (or after waiting for vblank if you don't use vint)
-    xgm_vblank_process();
-
-You could just copy the tools to /bin, or include compiling them as a step
-in building your Mega Drive project.
-
-When in doubt, copy what the example project does.
+As for installing the tools to your system, you could just copy them to
+`/usr/local/bin`, or include compiling them as a step in building your
+own Mega Drive project.
 
 
 ## How do I get sound data in my game without Rescomp?
@@ -64,7 +48,8 @@ TL;DR - By hand.
 
 ### For Music:
 
-Rescomp just runs xgmtool under the hood. You can script this with Bash, or add a step to your projects Makefile like so:
+Rescomp just runs xgmtool under the hood.
+You can script this with Bash, or add a step to your projects Makefile like so:
 
     # VGM files to convert to XGC. This assumes your VGM files are in res/bgm
     VGMS  = $(wildcard res/bgm/*.vgm)
@@ -128,3 +113,18 @@ And in a C header:
 
 Why is the _end part needed? You have to tell XGM the size of every SFX sample.
 You can see how this comes together in the example project.
+
+
+## Miscellanea
+
+The example project can be built with the `-mshort` compiler option.
+However, you will need to enable the lines in `xgm.s` with a (-mshort) comment,
+and disable the lines beneath them that they replace, then do the same for
+`dma.s` (dma_queue routine) or freaky things will happen.
+Due to the ABI change with `-mshort` the length of the stack used for those routines
+becomes smaller and the parameters need to be read from a different offset.
+
+Since xgm.s is the only m68k source file that "does things", you could potentially
+include this standalone driver in assembly projects without C as well.
+But since it is written in GNU syntax, you will have to convert it to Asm68k,
+AS, or asmx if you use any of those. 

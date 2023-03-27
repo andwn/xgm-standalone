@@ -12,11 +12,6 @@ extern void xgm_music_play(const uint8_t *xgc);
 // Pause / Stop any playing BGM
 extern void xgm_music_pause(void);
 
-// XGM keeps a table of samples in memory, up to 256. Each entry has an
-// address to the start of a sample, and the length in bytes.
-// So, for each sample, we need to provide this information to xgm_pcm_set.
-// The first 64 or so entries are reserved for BGM samples, so use higher
-// numbers for the ID.
 // Register a PCM sample that can be played using xgm_pcm_play()
 // Expects a pointer to raw PCM data. Signed, 8-bit, 14000Hz, and 256 byte aligned.
 extern void xgm_pcm_set(uint8_t id, const uint8_t *sample, uint32_t len);

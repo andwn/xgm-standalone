@@ -20,10 +20,10 @@ VAR xgmTempoDef, w, 1
     .section .text
 
 /* XGM Driver blob */
-BIN z80_xgm,    "res/z80_xgm.bin"
+BIN z80_xgm,    "../z80-xgm.bin"
 z80_xgm_end:
 
-BIN stop_xgm,   "res/stop_xgm.bin"
+BIN stop_xgm,   "stop_xgm.bin"
 
 z80_xgm_size:
         dc.w    z80_xgm_end-z80_xgm-1
@@ -61,7 +61,8 @@ FUNC xgm_init
 
         move.w  #60,xgmTempo
         move.w  #60,xgmTempoDef
-        btst    #0,(pal_mode)
+        move.w  (VdpCtrl),d0
+        andi.w  #1,d0
         beq.s   xgm_init_notpal
         move.w  #50,xgmTempoDef
     xgm_init_notpal:
@@ -149,37 +150,49 @@ FUNC xgm_music_pause
         rts
 
 FUNC xgm_pcm_set
+        DisableInts
+        PauseZ80
+
         lea     (Z80SMPTable),a1    /* a1 = Z80SMPTable + (id << 2) */
 
         moveq.l #0,d0
-        move.b  5(sp),d0            /* id */
+#        move.b  5(sp),d0            /* id (-mshort) */
+        move.b  7(sp),d0            /* id */
         lsl.w   #2,d0
         add.l   d0,a1
 
-        move.l  6(sp),d0            /* copy sample address */
+#        move.l  6(sp),d0            /* copy sample address (-mshort) */
+        move.l  8(sp),d0            /* copy sample address */
         lsr.l   #8,d0
         move.b  d0,(a1)+
         lsr.w   #8,d0
         move.b  d0,(a1)+
 
-        move.l  10(sp),d0           /* copy length */
+#        move.l  10(sp),d0           /* copy length (-mshort) */
+        move.l  12(sp),d0           /* copy length */
         lsr.l   #8,d0
         move.b  d0,(a1)+
         lsr.w   #8,d0
         move.b  d0,(a1)+
+
+        ResumeZ80
+        EnableInts
         rts
 
 FUNC xgm_pcm_play
         DisableInts
         PauseZ80
 
-        move.w  8(sp),d0	    /* channel */
+#        move.w  8(sp),d0	    /* channel (-mshort) */
+        move.w  14(sp),d0	   /* channel */
         move.w  d0,d1
         add.w   d1,d1
         lea     (Z80DrvParams+4),a0
         add.w   d1,a0
-        move.b  7(sp),(a0)+     /* priority */
-        move.b  5(sp),(a0)+     /* id */
+#        move.b  7(sp),(a0)+     /* priority (-mshort) */
+        move.b  11(sp),(a0)+    /* priority */
+#        move.b  5(sp),(a0)+     /* id (-mshort) */
+        move.b  7(sp),(a0)+     /* id */
 
         moveq   #1,d1
         lsl.w   d0,d1

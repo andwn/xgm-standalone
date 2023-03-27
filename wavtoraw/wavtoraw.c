@@ -8,9 +8,9 @@
 double *readSample(FILE* file, int chunkSize, int sampleSize, int numChan);
 
 int main(int argc, char *argv[]) {
-    char prefix[5];
-    char fileFormat[5];
-    char ckID[5];
+    char prefix[4];
+    char fileFormat[4];
+    char ckID[4];
     uint32_t nChunkSize;
     short wFormatTag;
     short nChannels;
@@ -43,23 +43,23 @@ int main(int argc, char *argv[]) {
     }
     /* Read the header bytes. */
     saferead(infile, "%4s", prefix);
-    saferead(infile, "%lu", &nChunkSize);
+    saferead(infile, "%4c", &nChunkSize);
     saferead(infile, "%4c", fileFormat );
     saferead(infile, "%4c", ckID );
-    saferead(infile, "%lu", &nChunkSize );
-    saferead(infile, "%hd", &wFormatTag );
-    saferead(infile, "%hd", &nChannels );
-    saferead(infile, "%lu", &nSamplesPerSecond );
-    saferead(infile, "%lu", &nBytesPerSecond );
-    saferead(infile, "%hd", &nBlockAlign );
-    saferead(infile, "%hd", &nBitsPerSample );
+    saferead(infile, "%4c", &nChunkSize );
+    saferead(infile, "%2c", &wFormatTag );
+    saferead(infile, "%2c", &nChannels );
+    saferead(infile, "%4c", &nSamplesPerSecond );
+    saferead(infile, "%4c", &nBytesPerSecond );
+    saferead(infile, "%2c", &nBlockAlign );
+    saferead(infile, "%2c", &nBitsPerSample );
     // pass extra bytes in bloc
     for(int i = 0; i < nChunkSize - 0x10; i++) {
         char c;
         saferead(infile, "%1c", &c);
     }
     saferead( infile, "%4c", ckID );
-    saferead( infile, "%lu", &nChunkSize );
+    saferead( infile, "%4c", &nChunkSize );
 
     if (nOutputSamplesPerSecond == 0) {
         nOutputSamplesPerSecond = nSamplesPerSecond;
@@ -108,29 +108,28 @@ int main(int argc, char *argv[]) {
 
 double nextSample(FILE* file, int sampleSize, int numChan) {
     double res = 0;
+    unsigned char b;
+    short w;
+    long l;
     for(int i = 0; i < numChan; i++) {
         switch(sampleSize) {
             case 1: {
-                unsigned char b;
                 fscanf(file, "%1c", &b);
                 res += ((int) b) - 0x80;
                 break;
             }
             case 2: {
-                short w;
-                fscanf(file, "%hd", &w);
+                fscanf(file, "%2c", &w);
                 res += w >> 8;
                 break;
             }
             case 3: {
-                long l;
-                fscanf(file, "%ld", &l);
+                fscanf(file, "%4c", &l);
                 res += l >> 16;
                 break;
             }
             case 4: {
-                long l;
-                fscanf(file, "%ld", &l);
+                fscanf(file, "%4c", &l);
                 res += l >> 24;
                 break;
             }

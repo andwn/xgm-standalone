@@ -39,7 +39,7 @@
 .endm
 
 .macro EnableInts
-        move #0x2300,sr
+        move #0x2500,sr
 .endm
 
 /* Z80 */
